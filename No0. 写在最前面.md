@@ -1,9 +1,46 @@
 ## 集群搭建前
-
-#### 禁用selinux
+#### 配置hostname
+```.env
+/etc/sysconfig/network
+NETWORKING=yes
+HOSTNAME=pg-k8s-1-168
+NETWORKING_IPV6=off
 ```
-sed -i 's/SELINUX=permissive/SELINUX=disabled/' /etc/sysconfig/selinux
+
+#### 配置hosts
+```.env
+vi /etc/hosts
+
+10.20.1.168 pg-k8s-1-168
+10.20.1.169 pg-k8s-1-169
+10.20.1.170 pg-k8s-1-170
+10.20.1.172 pg-k8s-1-172
+```
+
+#### 关闭防火墙
+```
+systemctl disable firewalld
+```
+手动关闭
+```.env
+systemctl stop firewalld 
+```
+查看关闭状态
+```.env
+systemctl status firewalld 
+```
+#### 禁用selinux
+永久方式
+
+修改/etc/selinux/config文件中设置SELINUX=disabled ，然后重启服务器。
+
+临时方式
+```
 setenforce 0
+```
+查看状态
+```
+sestatus
 ```
 #### 关闭swap
  

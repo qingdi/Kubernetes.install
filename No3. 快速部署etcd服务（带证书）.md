@@ -96,6 +96,9 @@ yum install -y etcd
 ### 配置etcd文件
 
 ```
+vi /etc/etcd/etcd.conf
+
+
 ETCD_NAME=k8s-1
 ETCD_DATA_DIR="/data/etcd/k8s-1"
 ETCD_LISTEN_PEER_URLS="https://0.0.0.0:2380"
@@ -118,7 +121,7 @@ ETCD_DISCOVERY=""
 ### 授权文件
 
 ```
-chown etcd:etcd /etc/etcd/ssl -R
+chown etcd:etcd /etc/etcd/ssl -R && \
 chown etcd:etcd /data/etcd/ -R
 ```
 

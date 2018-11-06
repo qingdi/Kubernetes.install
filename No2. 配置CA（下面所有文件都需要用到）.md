@@ -2,20 +2,24 @@
 ##### 1、下载cffsl等命令
 ```
 # 下载
-wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
-wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 && \
+wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 && \
 wget https://pkg.cfssl.org/R1.2/cfssl-certinfo_linux-amd64
 
 # 安装
-mv cfssl-certinfo_linux-amd64 /usr/local/bin/cfssl-certinfo
-mv cfssl_linux-amd64 /usr/local/bin/cfssl
-mv cfssljson_linux-amd64 /usr/local/bin/cfssljson
+mv cfssl-certinfo_linux-amd64 /usr/local/bin/cfssl-certinfo && \
+mv cfssl_linux-amd64 /usr/local/bin/cfssl && \
+mv cfssljson_linux-amd64 /usr/local/bin/cfssljson && \
 chmod +x /usr/local/bin/cfssl*
 
 ```
 
 ## 此处的CA配置，后面配置etcd和k8s时都需要使用
 ```
+mkdir /root/ssl && \
+cd /root/ssl && \
+cfssl print-defaults config > config.json && \
+cfssl print-defaults csr > csr.json
 cat >ca-config.json<<EOF
 {
   "signing": {
@@ -59,4 +63,7 @@ EOF
 
 生成证书
 cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+
+# ls ca*
+ca-config.json  ca.csr  ca-csr.json  ca-key.pem  ca.pem
 ```
