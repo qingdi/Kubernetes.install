@@ -9,7 +9,7 @@ iNode限制。使用overlay存储驱动会导致iNode的过渡消耗，尤其是
 
 ### 使用overlay2存储驱动
 
-修改/etc/docker/daemon.json
+修改/etc/docker/daemon.json，如果不存在就创建
 
 ```
 {
@@ -23,9 +23,16 @@ iNode限制。使用overlay存储驱动会导致iNode的过渡消耗，尤其是
 ```
 
 
-### 修改docker启动脚本
+### 修改docker启动脚本，和flanneld建立关联
 
 vi /usr/lib/systemd/system/docker.service
 ```
 ExecStart=/usr/bin/dockerd  $DOCKER_NETWORK_OPTIONS
+```
+
+### 启动
+```.env
+systemctl start docker.service
+
+ps -ef | grep docker
 ```
