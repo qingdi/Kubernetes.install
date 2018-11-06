@@ -126,6 +126,15 @@ chown etcd:etcd /data/etcd/ -R
 ```
 
 ### 集群检查
+健康检查
 ```
 etcdctl  --endpoints "https://127.0.0.1:2379" --ca-file=/etc/etcd/ssl/etcd-ca.pem   --cert-file=/etc/etcd/ssl/etcd.pem   --key-file=/etc/etcd/ssl/etcd-key.pem   cluster-health
+```
+节点列表
+```.env
+etcdctl  --endpoints "https://127.0.0.1:2379" --ca-file=/etc/etcd/ssl/etcd-ca.pem   --cert-file=/etc/etcd/ssl/etcd.pem   --key-file=/etc/etcd/ssl/etcd-key.pem member list
+```
+删除指定节点
+```.env
+etcdctl --endpoints "https://127.0.0.1:2379" --ca-file=/etc/etcd/ssl/etcd-ca.pem   --cert-file=/etc/etcd/ssl/etcd.pem   --key-file=/etc/etcd/ssl/etcd-key.pem member remove 37aed9101e7c824d
 ```
