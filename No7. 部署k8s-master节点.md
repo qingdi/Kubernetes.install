@@ -1,6 +1,7 @@
 
 ### 下面的配置文件中，很多都是有ip的。注意留心看
 ####  配置 kube-apiserver CA
+10.254.0.1 svc网关
 ```
 cat >kube-apiserver-csr.json<<EOF
 {
