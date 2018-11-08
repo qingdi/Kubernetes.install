@@ -12,6 +12,9 @@ iNode限制。使用overlay存储驱动会导致iNode的过渡消耗，尤其是
 修改/etc/docker/daemon.json，如果不存在就创建
 
 ```
+mkdir -pv /etc/docker/ && \
+vi /etc/docker/daemon.json
+
 {
   "registry-mirrors": ["https://registry.docker-cn.com"],
   "storage-driver": "overlay2",
@@ -32,6 +35,7 @@ ExecStart=/usr/bin/dockerd  $DOCKER_NETWORK_OPTIONS
 
 ### 启动
 ```.env
+systemctl daemon-reload && \
 systemctl start docker.service
 
 ps -ef | grep docker
