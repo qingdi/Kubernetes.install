@@ -78,12 +78,18 @@ EOF
 # 生成 etcd ca
 cfssl gencert -ca=etcd-ca.pem -ca-key=etcd-ca-key.pem -config=ca-config.json \
 -profile=kubernetes etcd-csr.json | cfssljson -bare etcd
-mkdir -pv /etc/etcd/ssl
+
+mkdir -pv /etc/etcd/ssl && \
 cp etcd*.pem /etc/etcd/ssl
 ls /etc/etcd/ssl/etcd*.pem
 
 # 复制到其他节点
 cd /etc/etcd && tar cvzf etcd-ssl.tgz ssl/
+
+scp etcd-ssl.tgz root@10.20.1.181:/root
+
+mkdir -pv /etc/etcd/ssl && \
+tar -zxvf /root/etcd-ssl.tgz -C /etc/etcd
 
 ```
 
@@ -118,7 +124,7 @@ ETCD_PEER_TRUSTED_CA_FILE="/etc/etcd/ssl/etcd-ca.pem"
 ETCD_DISCOVERY=""
 
 ```
-### 授权文件
+### 文件权限
 
 ```
 chown etcd:etcd /etc/etcd/ssl -R && \
@@ -128,7 +134,7 @@ chown etcd:etcd /data/etcd/ -R
 ### 集群检查
 健康检查
 ```
-etcdctl  --endpoints "https://127.0.0.1:2379" --ca-file=/etc/etcd/ssl/etcd-ca.pem   --cert-file=/etc/etcd/ssl/etcd.pem   --key-file=/etc/etcd/ssl/etcd-key.pem   cluster-health
+etcdctl  --endpoints "https://127.0.0.1:2379" --ca-file=/etc/etcd/ssl/etcd-ca.pem   --cert-file=/etc/etcd/ssl/etcd.pem   --key-file=/etc/etcd/ssl/etcd-key.pem cluster-health
 ```
 节点列表
 ```.env

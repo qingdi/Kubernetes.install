@@ -64,12 +64,16 @@ EOF
 ```
 cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes flanneld-csr.json |cfssljson -bare flanneld
 
-mkdir /etc/flanneld/ssl -pv
-mv flanneld*.pem /etc/flanneld/ssl/
+mkdir /etc/flanneld/ssl -pv && \
+cp flanneld*.pem /etc/flanneld/ssl/
 
 # 复制到其他节点
 cd /etc/flanneld && tar cvzf flanneld-ssl.tgz ssl/
- mkdir -pv /etc/flanneld
+
+scp flanneld-ssl.tgz root@10.20.1.181:/root
+
+mkdir -pv /etc/flanneld/ssl && \
+tar -zxvf /root/flanneld-ssl.tgz -C /etc/flanneld
 ```
 
 
@@ -97,7 +101,7 @@ yum install -y flannel
 
 #### flannel的配置
 ```
-cd /etc/sysconfig/flanneld
+vi /etc/sysconfig/flanneld
 
 FLANNEL_ETCD_ENDPOINTS="https://192.168.44.138:2379,https://192.168.44.139:2379,https://192.168.44.140:2379"
 FLANNEL_ETCD_PREFIX="/kube-centos/network"
