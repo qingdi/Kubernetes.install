@@ -159,27 +159,34 @@ ls admin*.pem
 ```
 # 复制生成的ca
 ```
-mkdir -pv /etc/kubernetes/pki
+mkdir -pv /etc/kubernetes/pki && \
 cp ca*.pem admin*.pem kube-proxy*.pem kube-scheduler*.pem kube-controller-manager*.pem kube-apiserver*.pem /etc/kubernetes/pki
 cd /etc/kubernetes && tar cvzf pki.tgz pki/
-scp /etc/kubernetes/pki.tgz 其他机器:~/
+
+#复制到其他机器
+scp /etc/kubernetes/pki.tgz root@10.20.1.181:/root
+mkdir -pv /etc/kubernetes/pki && \
+tar -zxvf /root/pki.tgz -C /etc/kubernetes
 ```
 
 #### 接下来开始正式部署过程
 ```
 wget https://dl.k8s.io/v1.11.0/kubernetes-server-linux-amd64.tar.gz
-tar xf kubernetes-server-linux-amd64.tar.gz
-cd kubernetes/server/bin
-mkdir -pv /usr/local/kubernetes-v1.11.0/bin
-cp kube-apiserver kube-controller-manager kube-scheduler kube-proxy kubelet kubectl /usr/local/kubernetes-v1.11.0/bin
-ln -sv /usr/local/kubernetes-v1.11.0 /usr/local/kubernetes
-cp /usr/local/kubernetes/bin/kubectl /usr/local/bin/kubectl
+tar -zxvf kubernetes-server-linux-amd64.tar.gz
+
+cd kubernetes/server/bin && \
+mkdir -pv /usr/local/kubernetes-v1.11.0/bin && \
+cp kube-apiserver kube-controller-manager kube-scheduler kube-proxy kubelet kubectl /usr/local/kubernetes-v1.11.0/bin && \
+ln -sv /usr/local/kubernetes-v1.11.0 /usr/local/kubernetes && \
+cp /usr/local/kubernetes/bin/kubectl /usr/local/bin/kubectl 
+
 kubectl version
 ```
 #### 生成kubeconfig
 ```
 # 使用 TLS Bootstrapping 
 export BOOTSTRAP_TOKEN=$(head -c 16 /dev/urandom | od -An -t x | tr -d ' ')
+
 cat > /etc/kubernetes/token.csv <<EOF
 ${BOOTSTRAP_TOKEN},kubelet-bootstrap,10001,"system:kubelet-bootstrap"
 EOF
@@ -187,18 +194,22 @@ EOF
 # 创建 kubelet bootstrapping kubeconfig
 cd /etc/kubernetes
 export KUBE_APISERVER="https://192.168.44.138:6443"
+
 kubectl config set-cluster kubernetes \
   --certificate-authority=/etc/kubernetes/pki/ca.pem \
   --embed-certs=true \
   --server=${KUBE_APISERVER} \
   --kubeconfig=kubelet-bootstrap.conf
+  
 kubectl config set-credentials kubelet-bootstrap \
   --token=${BOOTSTRAP_TOKEN} \
   --kubeconfig=kubelet-bootstrap.conf
+  
 kubectl config set-context default \
   --cluster=kubernetes \
   --user=kubelet-bootstrap \
   --kubeconfig=kubelet-bootstrap.conf
+  
 kubectl config use-context default --kubeconfig=kubelet-bootstrap.conf
 
 # 创建 kube-controller-manager kubeconfig
@@ -208,15 +219,18 @@ kubectl config set-cluster kubernetes \
   --embed-certs=true \
   --server=${KUBE_APISERVER} \
   --kubeconfig=kube-controller-manager.conf
+  
 kubectl config set-credentials kube-controller-manager \
   --client-certificate=/etc/kubernetes/pki/kube-controller-manager.pem \
   --client-key=/etc/kubernetes/pki/kube-controller-manager-key.pem \
   --embed-certs=true \
   --kubeconfig=kube-controller-manager.conf
+  
 kubectl config set-context default \
   --cluster=kubernetes \
   --user=kube-controller-manager \
   --kubeconfig=kube-controller-manager.conf
+  
 kubectl config use-context default --kubeconfig=kube-controller-manager.conf
 
 # 创建 kube-scheduler kubeconfig
@@ -226,15 +240,18 @@ kubectl config set-cluster kubernetes \
   --embed-certs=true \
   --server=${KUBE_APISERVER} \
   --kubeconfig=kube-scheduler.conf
+  
 kubectl config set-credentials kube-scheduler \
   --client-certificate=/etc/kubernetes/pki/kube-scheduler.pem \
   --client-key=/etc/kubernetes/pki/kube-scheduler-key.pem \
   --embed-certs=true \
   --kubeconfig=kube-scheduler.conf
+  
 kubectl config set-context default \
   --cluster=kubernetes \
   --user=kube-scheduler \
   --kubeconfig=kube-scheduler.conf
+  
 kubectl config use-context default --kubeconfig=kube-scheduler.conf
 
 # 创建 kube-proxy kubeconfig
@@ -244,15 +261,18 @@ kubectl config set-cluster kubernetes \
   --embed-certs=true \
   --server=${KUBE_APISERVER} \
   --kubeconfig=kube-proxy.conf
+  
 kubectl config set-credentials kube-proxy \
   --client-certificate=/etc/kubernetes/pki/kube-proxy.pem \
   --client-key=/etc/kubernetes/pki/kube-proxy-key.pem \
   --embed-certs=true \
   --kubeconfig=kube-proxy.conf
+  
 kubectl config set-context default \
   --cluster=kubernetes \
   --user=kube-proxy \
   --kubeconfig=kube-proxy.conf
+  
 kubectl config use-context default --kubeconfig=kube-proxy.conf
 
 # 创建 admin kubeconfig
@@ -262,31 +282,33 @@ kubectl config set-cluster kubernetes \
   --embed-certs=true \
   --server=${KUBE_APISERVER} \
   --kubeconfig=admin.conf
+  
 kubectl config set-credentials admin \
   --client-certificate=/etc/kubernetes/pki/admin.pem \
   --client-key=/etc/kubernetes/pki/admin-key.pem \
   --embed-certs=true \
   --kubeconfig=admin.conf
+  
 kubectl config set-context default \
   --cluster=kubernetes \
   --user=admin \
   --kubeconfig=admin.conf
+  
 kubectl config use-context default --kubeconfig=admin.conf
 
 # 把 kube-proxy.conf 复制到其他节点
-scp kubelet-bootstrap.conf kube-proxy.conf qita:/etc/kubernetes
-scp kubelet-bootstrap.conf kube-proxy.conf qita:/etc/kubernetes
+scp kubelet-bootstrap.conf kube-proxy.conf root@10.20.1.178:/etc/kubernetes
 cd $HOME
 ```
 #### 配置master相关组件
 ```
 # 复制 etcd ca
-mkdir -pv /etc/kubernetes/pki/etcd
-cd /etc/etcd/ssl
+mkdir -pv /etc/kubernetes/pki/etcd && \
+cd /etc/etcd/ssl && \
 cp etcd-ca.pem etcd-key.pem etcd.pem /etc/kubernetes/pki/etcd
 
 # 生成 service account key
-openssl genrsa -out /etc/kubernetes/pki/sa.key 2048
+openssl genrsa -out /etc/kubernetes/pki/sa.key 2048 && \
 openssl rsa -in /etc/kubernetes/pki/sa.key -pubout -out /etc/kubernetes/pki/sa.pub
 ls /etc/kubernetes/pki/sa.*
 cd $HOME
@@ -320,9 +342,9 @@ EOF
 # 该配置文件同时被 kube-apiserver, kube-controller-manager
 # kube-scheduler, kubelet, kube-proxy 使用
 cat >/etc/kubernetes/config<<EOF
-KUBE_LOGTOSTDERR="--logtostderr=true"
-KUBE_LOG_LEVEL="--v=2"
-EOF
+   KUBE_LOGTOSTDERR="--logtostderr=true"
+   KUBE_LOG_LEVEL="--v=2"
+   EOF
 
 cat >/etc/kubernetes/apiserver<<EOF
 KUBE_API_ADDRESS="--advertise-address=192.168.44.138"
@@ -370,10 +392,12 @@ KUBE_CONTROLLER_MANAGER_ARGS="--address=127.0.0.1 --cluster-cidr=172.30.0.0/16 -
 EOF
 
 # 启动
+kubectl get componentstatuses
 systemctl daemon-reload
 systemctl enable kube-controller-manager
 systemctl start kube-controller-manager
 systemctl status kube-controller-manager
+ kubectl get componentstatuses
 ```
 
 #### 配置启动kube-scheduler
@@ -409,6 +433,7 @@ systemctl daemon-reload
 systemctl enable kube-scheduler
 systemctl start kube-scheduler
 systemctl status kube-scheduler
+kubectl get componentstatuses
 ```
 
 #### 配置kubectl使用

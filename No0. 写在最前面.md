@@ -3,18 +3,42 @@
 ```.env
 /etc/sysconfig/network
 NETWORKING=yes
-HOSTNAME=pg-k8s-1-168
+HOSTNAME=pg-k8s-1-184
 NETWORKING_IPV6=off
+
+cat > /etc/sysconfig/network<<EOF
+NETWORKING=yes
+HOSTNAME=pg-k8s-1-184
+NETWORKING_IPV6=off
+EOF
+
+cat > /etc/sysconfig/network<<EOF
+NETWORKING=yes
+HOSTNAME=pg-k8s-1-185
+NETWORKING_IPV6=off
+EOF
+
+cat > /etc/sysconfig/network<<EOF
+NETWORKING=yes
+HOSTNAME=pg-k8s-1-186
+NETWORKING_IPV6=off
+EOF
 ```
 
 #### 配置hosts
 ```.env
 vi /etc/hosts
 
-10.20.1.168 pg-k8s-1-168
-10.20.1.169 pg-k8s-1-169
-10.20.1.170 pg-k8s-1-170
-10.20.1.172 pg-k8s-1-172
+10.20.1.184 pg-k8s-1-184
+10.20.1.185 pg-k8s-1-185
+10.20.1.186 pg-k8s-1-186
+
+cat >> /etc/hosts<<EOF
+10.20.1.184 pg-k8s-1-184
+10.20.1.185 pg-k8s-1-185
+10.20.1.186 pg-k8s-1-186
+EOF
+
 ```
 
 #### 关闭防火墙

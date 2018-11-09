@@ -1,12 +1,12 @@
 # 配置node相关组件
 
-## 安装cni
+## 安装cni 跳过
 ```
 # 安装 cni
 cd /server/software/k8s
-wget https://github.com/containernetworking/plugins/releases/download/v0.7.1/cni-plugins-amd64-v0.7.1.tgz
-mkdir -pv /opt/cni/bin
-tar xf cni-plugins-amd64-v0.7.1.tgz -C /opt/cni/bin
+wget https://github.com/containernetworking/plugins/releases/download/v0.7.1/cni-plugins-amd64-v0.7.1.tgz && \
+mkdir -pv /opt/cni/bin && \
+tar -zxvf cni-plugins-amd64-v0.7.1.tgz -C /opt/cni/bin
 ls -l /opt/cni/bin
 cd $HOME
 
@@ -37,8 +37,8 @@ cd $HOME
 备注： cni 和二进制的flannel可能会存在路由冲突的问题。
 ```
 
-## 配置启动kubelet
-```
+## 配置启动kubelet 继续
+``` 
 # 启动文件
 mkdir -pv /data/kubelet
 cat >/etc/systemd/system/kubelet.service<<EOF
@@ -167,7 +167,7 @@ systemctl start kube-proxy
 systemctl status kube-proxy
 ```
 
-## 设置集群角色
+## 设置集群角色 在 master节点执行
 ##### 设置 lab1 为 master
 ```
 kubectl label nodes 192.168.44.138 node-role.kubernetes.io/master=
